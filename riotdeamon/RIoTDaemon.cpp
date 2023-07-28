@@ -22,6 +22,7 @@
 #include <iostream>
 #include <condition_variable>
 #include <thread>
+#include <csignal>
 
 #include "rtConnection.h"
 #include "rtLog.h"
@@ -93,7 +94,7 @@ void onDeviceProperties(rtMessageHeader const *rtHeader, uint8_t const *rtMsg, u
         rtMessage_Create(&res);
 
         char *uuid;
-        rtMessage_GetString(req, "uuid", &uuid);
+        rtMessage_GetString(req, "uuid", (const char **)&uuid);
 
         cout << "Device identifier is " << uuid << endl;
         free(uuid);
@@ -124,8 +125,8 @@ void onDeviceProperty(rtMessageHeader const *rtHeader, uint8_t const *rtMsg, uin
         rtMessage_Create(&res);
 
         char *uuid, *property;
-        rtMessage_GetString(req, "uuid", &uuid);
-        rtMessage_GetString(req, "property", &property);
+        rtMessage_GetString(req, "uuid", (const char **)&uuid);
+        rtMessage_GetString(req, "property", (const char **)&property);
 
         cout << "Device identifier is " << uuid << ", Property requested :" << property << endl;
         free(uuid);
@@ -149,8 +150,8 @@ void onSendCommand(rtMessageHeader const *rtHeader, uint8_t const *rtMsg, uint32
         rtMessage_Create(&res);
 
         char *uuid, *property;
-        rtMessage_GetString(req, "uuid", &uuid);
-        rtMessage_GetString(req, "command", &property);
+        rtMessage_GetString(req, "uuid", (const char **)&uuid);
+        rtMessage_GetString(req, "command",(const char **) &property);
 
         cout << "Device identifier is " << uuid << ", command requested :" << property << endl;
         free(uuid);
@@ -165,7 +166,7 @@ void onSendCommand(rtMessageHeader const *rtHeader, uint8_t const *rtMsg, uint32
 
 void handleTermSignal(int _signal)
 {
-    cout << "Exiting from app.." << endl;
+    cerr << "Exiting from app.." << endl;
 
     unique_lock<std::mutex> ulock(m_lock);
     m_isActive = false;
@@ -188,9 +189,13 @@ void waitForTermSignal()
 int main(int argc, char const *argv[])
 {
     rtLog_SetLevel(RT_LOG_DEBUG);
+    cout<<"Version 1.0 "<<endl;
 
+    signal(SIGTERM, [](int x)
+           { handleTermSignal(x); });
+    
     rtConnection con;
-    rtConnection_Create(&con, "IOTGateway", "tcp://127.0.0.1:10001");
+    rtConnection_Create(&con, "IOTGateway", argv[1]);
     rtConnection_AddListener(con, "getAvailableDevices", onAvailableDevices, con);
     rtConnection_AddListener(con, "getDeviceProperties", onDeviceProperties, con);
     rtConnection_AddListener(con, "getDeviceProperty", onDeviceProperty, con);
