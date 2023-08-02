@@ -111,9 +111,21 @@ namespace WPEFramework
             return (success);
         }
 
-        bool RIoTControl::getDeviceProperties()
+        bool RIoTControl::getDeviceProperties(const std::string &uuid,std::list<std::string> &properties)
         {
             bool success = false;
+
+            if (connectToRemote())
+            {
+                iotbridge::getDeviceProperties(uuid,properties);
+                std::cout << " Value returned is " << properties.size() << std::endl;
+                success = true;
+                iotbridge::cleanupIPC();
+            }
+            else
+            {
+                std::cout << "Failed to connect to IoT Gateway" << std::endl;
+            }
 
             return (success);
         }
@@ -164,8 +176,10 @@ int main(int argc, char const *argv[])
     using WPEFramework::Plugin::RIoTControl;
 
     RIoTControl *client = new RIoTControl();
+    std::list<std::string> properties;
     //client->getDeviceProperty("123-45-876","doomed");
-    client->getAvailableDevicesWrapper();
+    //client->getAvailableDevicesWrapper();
+    client->getDeviceProperties("1234-123-321312",properties);
     delete client;
 
     return 0;

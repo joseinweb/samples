@@ -21,6 +21,7 @@
 
 #include <string>
 #include <atomic>
+#include <list>
 
 namespace WPEFramework
 {
@@ -53,7 +54,7 @@ namespace WPEFramework
 
             bool getAvailableDevicesWrapper();
             bool getDeviceProperty(const std::string &uuid, const std::string &prop);
-            bool getDeviceProperties();
+            bool getDeviceProperties(const std::string &uuid,std::list<std::string> &properties);
             bool sendCommand(const std::string &uuid, const std::string &cnd);
 
             bool initializeIPC();

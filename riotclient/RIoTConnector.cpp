@@ -69,14 +69,11 @@ namespace WPEFramework
             std::cout << "[getDeviceList] RPC returns " << rtStrError(result) << std::endl;
             if (RT_OK == result)
             {
-
-                rtMessage devices;
                 char *entry;
                 uint32_t outLen;
                 rtMessage_ToString(res, &entry, &outLen);
                 std::cout << "[getDeviceList]Returning the response " << entry << std::endl;
                 free(entry);
-                rtMessage_GetMessage(res, "devices", &devices);
                 rtMessage_GetArrayLength(res, "devices", &count);
                 std::cout << "[getDeviceList] array count " << count << std::endl;
 
@@ -86,11 +83,10 @@ namespace WPEFramework
 
                     rtMessage devEntry;
                     result = rtMessage_GetMessageItem(res, "devices", i, &devEntry);
-                    std::cout << "[getDeviceList] rtMessage_GetMessageItem for "<<i<<" returns " <<result<<std::endl;
-                
-                rtMessage_ToString(devEntry, &entry, &outLen);
-                std::cout << "[getDeviceList]Returning the response " << entry << std::endl;
-                free(entry);
+
+                    rtMessage_ToString(devEntry, &entry, &outLen);
+                    std::cout << "[getDeviceList]Returning the response " << entry << std::endl;
+                    free(entry);
 
                     rtMessage_GetString(devEntry, "name", (const char **)&entry);
                     device->deviceName = entry;
@@ -104,7 +100,7 @@ namespace WPEFramework
 
                     deviceList.push_back(device);
                 }
-                std::cout << "[getDeviceList] Done "<<std::endl;
+                std::cout << "[getDeviceList] Done " << std::endl;
                 rtMessage_Release(res);
             }
             else
@@ -133,14 +129,19 @@ namespace WPEFramework
             if (RT_OK == err)
             {
 
-                rtMessage properties;
+                char *entry;
+                uint32_t outLen;
+                rtMessage_ToString(res, &entry, &outLen);
+                std::cout << "[getDeviceList]Returning the response " << entry << std::endl;
+                free(entry);
+
                 rtMessage_GetArrayLength(res, "properties", &count);
-                rtMessage_GetMessage(res, "properties", &properties);
+                std::cout << "[getDeviceProperties] array count " << count << std::endl;
 
                 for (int i = 0; i < count; i++)
                 {
                     char *entry;
-                    rtMessage_GetStringItem(res, "devices", count, (const char **)&entry);
+                    rtMessage_GetStringItem(res, "properties", i, (const char **)&entry);
                     propList.push_back(entry);
                 }
                 rtMessage_Release(res);
