@@ -41,7 +41,7 @@ namespace avahi
     bool m_scanInProgress(false);
     std::mutex m_stateMutex;
     std::condition_variable m_stateCond;
-    std::list<std::shared_ptr<RDKDevice> > deviceList;
+    std::list<std::shared_ptr<RDKDevice>> deviceList;
 
     void onDeviceStatusChanged(AvahiClient *ac, AvahiClientState acs, void *udata)
     {
@@ -80,6 +80,7 @@ namespace avahi
             device->ipAddress = a;
             device->addrType = (address->proto == AVAHI_PROTO_INET ? IPV4 : IPV6);
             deviceList.push_back(device);
+            stopDiscovery();
         }
         avahi_service_resolver_free(r);
     }
@@ -108,7 +109,7 @@ namespace avahi
             break;
         case AVAHI_BROWSER_ALL_FOR_NOW:
             std::cout << "onServiceDiscovery AVAHI_BROWSER_ALL_FOR_NOW" << std::endl;
-            //stopDiscovery();
+            stopDiscovery();
             break;
         case AVAHI_BROWSER_REMOVE:
             std::cout << "onServiceDiscovery AVAHI_BROWSER_REMOVE called " << std::endl;
@@ -122,10 +123,10 @@ namespace avahi
     bool stopDiscovery()
     {
         std::thread::id this_id = std::this_thread::get_id();
-        std::cout << "stopDiscovery, thread id " << this_id << std::endl;
+        std::cout << "[stopDiscovery], thread id " << this_id << std::endl;
         std::lock_guard<std::mutex> lockguard(m_stateMutex);
         m_scanInProgress = false;
-        m_stateCond.notify_one();
+        m_stateCond.notify_all();
         return true;
     }
     bool initialize(const std::string &serviceName)
@@ -159,7 +160,7 @@ namespace avahi
         m_initialized = true;
         return m_initialized;
     }
-    int discoverDevices(std::list<std::shared_ptr<RDKDevice> > &devices, int timeoutMillis)
+    int discoverDevices(std::list<std::shared_ptr<RDKDevice>> &devices, int timeoutMillis)
     {
 
         std::cout << "discoverDevices" << std::endl;
@@ -185,8 +186,7 @@ namespace avahi
             if (!m_scanInProgress)
             {
                 std::thread::id this_id = std::this_thread::get_id();
-                std::cout << "stopping  scanning " << this_id << std::endl;
-                avahi_threaded_poll_stop(thread_poll);
+                std::cout << "[discoverDevices] Got devices. breaking.." << this_id << std::endl;
                 break;
             }
 
@@ -197,13 +197,15 @@ namespace avahi
             m_stateCond.wait_for(lock, remainingTime);
         }
         std::cout << "Outside While loop" << std::endl;
-        if (m_scanInProgress)
+//      if (m_scanInProgress)
         {
-            avahi_threaded_poll_stop(thread_poll);
+            // avahi_threaded_poll_lock(thread_poll);
+            //avahi_threaded_poll_stop(thread_poll);
+            // avahi_threaded_poll_unlock(thread_poll);
             m_scanInProgress = false;
-        } //});
+        } 
 
-        for (std::list<std::shared_ptr<RDKDevice> >::iterator it = deviceList.begin(); it != deviceList.end(); ++it)
+        for (std::list<std::shared_ptr<RDKDevice>>::iterator it = deviceList.begin(); it != deviceList.end(); ++it)
             devices.push_back(*it);
         return deviceList.size();
     }

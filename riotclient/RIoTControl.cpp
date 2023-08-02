@@ -94,6 +94,7 @@ namespace WPEFramework
                 std::list<std::shared_ptr<WPEFramework::iotbridge::IOTDevice> > deviceList;
                 if (iotbridge::getDeviceList(deviceList) > 0)
                 {
+                    std::cout << "[getAvailableDevicesWrapper] total count "<<deviceList.size()<<std::endl;
 
                     for (const auto &device : deviceList)
                     {
@@ -163,6 +164,7 @@ int main(int argc, char const *argv[])
     using WPEFramework::Plugin::RIoTControl;
 
     RIoTControl *client = new RIoTControl();
+    //client->getDeviceProperty("123-45-876","doomed");
     client->getAvailableDevicesWrapper();
     delete client;
 

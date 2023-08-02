@@ -36,7 +36,7 @@ add_executable(${MODULE_NAME}
         RIoTConnector.cpp
         AvahiClient.cpp)
 
-find_path(RTMESSAGE_API_HEADER NAMES rtMessage.h PATH_SUFFIXES rtmessage)
+find_path(RTMESSAGE_API_HEADER NAMES rtMessage.h HINTS ~/work/rbus/install/usr/include PATH_SUFFIXES rtmessage)
 
 set(RTMESSAGE_API_HEADERS "")
 if (NOT ${RTMESSAGE_API_HEADER} STREQUAL "RTMESSAGE_API_HEADER-NOTFOUND")
@@ -46,7 +46,7 @@ if (NOT ${RTMESSAGE_API_HEADER} STREQUAL "RTMESSAGE_API_HEADER-NOTFOUND")
 endif()
 
 set(RTMESSAGE_LIBRARIES "")
-find_library(RTMESSAGE_LIBRARY NAMES rtMessage)
+find_library(RTMESSAGE_LIBRARY REQUIRED HINTS ~/work/rbus/install/usr/lib NAMES rtMessage)
 if (NOT ${RTMESSAGE_LIBRARY} STREQUAL "RTMESSAGE_LIBRARY-NOTFOUND")
         set(RTMESSAGE_LIBRARIES ${RTMESSAGE_LIBRARY})
 endif()
